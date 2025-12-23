@@ -1,0 +1,29 @@
+services:
+  - type: web
+    runtime: node
+    name: momo-payment-backend
+    region: oregon
+    plan: free
+    buildCommand: npm install
+    startCommand: node index.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 5000
+      - key: MOMO_ENVIRONMENT
+        sync: false
+      - key: MOMO_BASE_URL
+        sync: false
+      - key: MOMO_SUBSCRIPTION_KEY
+        sync: false
+      - key: MOMO_API_USER_ID
+        sync: false
+      - key: MOMO_API_KEY
+        sync: false
+      - key: CALLBACK_URL
+        sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false

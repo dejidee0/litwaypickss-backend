@@ -1,0 +1,20 @@
+{
+  "name": "litway-picks-momo",
+  "version": "1.0.0",
+  "description": "MTN MoMo Payment Processor for LitWay Picks",
+  "main": "MoMoPaymentProcessor.js",
+  "scripts": {
+    "start": "node MoMoPaymentProcessor.js",
+    "test-server": "node test-server.js",
+    "dev": "node MoMoPaymentProcessor.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.89.0",
+    "axios": "^1.6.0",
+    "body-parser": "^1.20.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^5.2.1",
+    "uuid": "^9.0.0"
+  }
+}
