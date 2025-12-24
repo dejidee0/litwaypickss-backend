@@ -27,10 +27,15 @@ try {
     );
     console.log("✅ Supabase client initialized");
   } else {
-    console.log("⚠️ Supabase credentials not found - running in offline mode (no database)");
+    console.log(
+      "⚠️ Supabase credentials not found - running in offline mode (no database)"
+    );
   }
 } catch (error) {
-  console.log("⚠️ Supabase initialization failed - running in offline mode:", error.message);
+  console.log(
+    "⚠️ Supabase initialization failed - running in offline mode:",
+    error.message
+  );
 }
 
 const MOMO_BASE_URL =
@@ -166,7 +171,10 @@ async function fetchTransactionDetails(referenceId, accessToken) {
     );
     return response.data;
   } catch (error) {
-    console.error("❌ Transaction fetch error:", error.response?.data || error.message);
+    console.error(
+      "❌ Transaction fetch error:",
+      error.response?.data || error.message
+    );
     return null;
   }
 }
@@ -177,7 +185,7 @@ async function fetchTransactionDetails(referenceId, accessToken) {
  */
 async function requestToPay(details, accessToken) {
   const referenceId = uuidv4();
-  
+
   try {
     // Request body matching PHP structure exactly
     const requestBody = {
@@ -220,9 +228,16 @@ async function requestToPay(details, accessToken) {
     console.log("Response Status:", response.status);
 
     // PHP checks for status 202, 201, or 200
-    if (response.status === 202 || response.status === 201 || response.status === 200) {
+    if (
+      response.status === 202 ||
+      response.status === 201 ||
+      response.status === 200
+    ) {
       // Fetch transaction details like PHP does
-      const transaction = await fetchTransactionDetails(referenceId, accessToken);
+      const transaction = await fetchTransactionDetails(
+        referenceId,
+        accessToken
+      );
       return {
         success: true,
         referenceId,
@@ -234,7 +249,10 @@ async function requestToPay(details, accessToken) {
       throw new Error(`Unable to complete transaction. ${message}`);
     }
   } catch (error) {
-    console.error("❌ Request to Pay Error:", error.response?.data || error.message);
+    console.error(
+      "❌ Request to Pay Error:",
+      error.response?.data || error.message
+    );
     throw error;
   }
 }
@@ -314,7 +332,7 @@ app.post("/api/momo/pay", async (req, res) => {
           loyalty_discount_applied: appliedDiscount || null,
         })
         .select()
-        .single();
+        .maybeSingle();
 
       if (dbError) {
         console.error("❌ Database Error:", dbError);
@@ -328,13 +346,16 @@ app.post("/api/momo/pay", async (req, res) => {
     const accessToken = await getAccessToken();
 
     // Make request to pay (matching PHP implementation)
-    const result = await requestToPay({
-      amount: amount,
-      currency: currency,
-      process_id: processId,
-      phone_no: formattedPhone,
-      message: payerMessage || "Payment for order",
-    }, accessToken);
+    const result = await requestToPay(
+      {
+        amount: amount,
+        currency: currency,
+        process_id: processId,
+        phone_no: formattedPhone,
+        message: payerMessage || "Payment for order",
+      },
+      accessToken
+    );
 
     // Update order with reference ID
     if (supabase && order) {
@@ -362,7 +383,6 @@ app.post("/api/momo/pay", async (req, res) => {
       orderId: order?.id,
       transaction: result.transaction,
     });
-
   } catch (error) {
     console.error("\n❌ PAYMENT ERROR:");
     console.error("Message:", error.message);
@@ -397,7 +417,10 @@ app.get("/api/momo/status/:referenceId", async (req, res) => {
         .single();
 
       if (!dbError && order) {
-        if (order.payment_status === "SUCCESSFUL" || order.payment_status === "FAILED") {
+        if (
+          order.payment_status === "SUCCESSFUL" ||
+          order.payment_status === "FAILED"
+        ) {
           return res.json({
             success: true,
             status: order.payment_status,
@@ -410,7 +433,7 @@ app.get("/api/momo/status/:referenceId", async (req, res) => {
 
     // Check in-memory cache
     const cached = pendingTransactions.get(referenceId);
-    
+
     // Fetch from MoMo API
     const accessToken = await getAccessToken();
     const transaction = await fetchTransactionDetails(referenceId, accessToken);
@@ -441,7 +464,8 @@ app.get("/api/momo/status/:referenceId", async (req, res) => {
       };
 
       if (transaction.financialTransactionId) {
-        updateData.financial_transaction_id = transaction.financialTransactionId;
+        updateData.financial_transaction_id =
+          transaction.financialTransactionId;
       }
 
       if (status === "SUCCESSFUL") {
@@ -477,7 +501,10 @@ app.get("/api/momo/status/:referenceId", async (req, res) => {
       }, 300000);
     }
   } catch (error) {
-    console.error("❌ Status Check Error:", error.response?.data || error.message);
+    console.error(
+      "❌ Status Check Error:",
+      error.response?.data || error.message
+    );
 
     res.status(500).json({
       success: false,
@@ -686,11 +713,16 @@ app.listen(PORT, () => {
   console.log(`💱 Currency: LRD (Liberian Dollar)`);
   console.log(`🌐 Base URL: ${MOMO_BASE_URL}`);
   console.log(`🔗 Callback URL: ${CALLBACK_URL}`);
-  console.log(`💾 Supabase: ${supabase ? "Connected" : "Not configured (offline mode)"}`);
+  console.log(
+    `💾 Supabase: ${supabase ? "Connected" : "Not configured (offline mode)"}`
+  );
   console.log("\n" + "=".repeat(60));
   console.log("🔍 Configuration Check:");
   console.log("=".repeat(60));
-  console.log("✓ Subscription Key:", MOMO_SUBSCRIPTION_KEY ? "SET" : "❌ MISSING");
+  console.log(
+    "✓ Subscription Key:",
+    MOMO_SUBSCRIPTION_KEY ? "SET" : "❌ MISSING"
+  );
   console.log("✓ API User ID:", MOMO_API_USER_ID ? "SET" : "❌ MISSING");
   console.log("✓ API Key:", MOMO_API_KEY ? "SET" : "❌ MISSING");
   console.log("=".repeat(60) + "\n");
