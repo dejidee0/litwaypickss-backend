@@ -171,6 +171,7 @@ async function fetchTransactionDetails(referenceId, accessToken) {
     );
     return response.data;
   } catch (error) {
+    console.log("refId", referenceId);
     console.error(
       "❌ Transaction fetch error:",
       error.response?.data || error.message
