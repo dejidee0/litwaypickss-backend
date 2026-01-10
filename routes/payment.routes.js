@@ -1,10 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const supabase = require("../config/database");
-const {
-  getAccessToken,
-  requestToPay,
-} = require("../services/momoService");
+const { getAccessToken, requestToPay } = require("../services/momoService");
 const { formatLiberianPhone } = require("../utils/phoneFormatter");
 const pendingTransactions = require("../utils/transactionStore");
 
@@ -44,12 +41,6 @@ router.post("/pay", async (req, res) => {
     }
     const formattedPhone = phoneResult.phone;
 
-    console.log("\n" + "=".repeat(60));
-    console.log("💳 NEW PAYMENT REQUEST");
-    console.log("=".repeat(60));
-    console.log("📱 Formatted phone:", formattedPhone);
-    console.log("💰 Amount:", amount);
-
     // For Liberia, currency is LRD
     const currency = "LRD";
     const processId = externalId || `ORDER-${Date.now()}`;
@@ -87,7 +78,6 @@ router.post("/pay", async (req, res) => {
         console.error("❌ Database Error:", dbError);
       } else {
         order = data;
-        console.log("✅ Order created in database:", order.id);
       }
     }
 
@@ -103,7 +93,7 @@ router.post("/pay", async (req, res) => {
         phone_no: formattedPhone,
         message: payerMessage || "Payment for order",
       },
-      accessToken
+      accessToken,
     );
 
     // Update order with reference ID
@@ -122,9 +112,6 @@ router.post("/pay", async (req, res) => {
       timestamp: Date.now(),
     });
 
-    console.log("✅ Payment initiated successfully:", result.referenceId);
-    console.log("=".repeat(60) + "\n");
-
     res.json({
       success: true,
       message: "Payment request sent to customer's phone",
@@ -133,13 +120,7 @@ router.post("/pay", async (req, res) => {
       transaction: result.transaction,
     });
   } catch (error) {
-    console.error("\n❌ PAYMENT ERROR:");
-    console.error("Message:", error.message);
-    if (error.response) {
-      console.error("Response Status:", error.response.status);
-      console.error("Response Data:", error.response.data);
-    }
-    console.log("=".repeat(60) + "\n");
+    console.error("❌ Payment Error:", error.message);
 
     let errorMessage = error.message || "Payment initiation failed";
     let statusCode = error.response?.status || 500;
