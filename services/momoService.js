@@ -20,11 +20,6 @@ let tokenExpiry = null;
 async function getAccessToken() {
   // Check if we have a valid cached token
   if (cachedToken && tokenExpiry && new Date() < tokenExpiry) {
-    console.log(
-      "♻️ Using cached access token (expires:",
-      tokenExpiry.toISOString(),
-      ")",
-    );
     return cachedToken;
   }
 
@@ -55,13 +50,6 @@ async function getAccessToken() {
     tokenExpiry = new Date(Date.now() + expiresInMs - 300000); // 5 minutes buffer
     cachedToken = `Bearer ${accessToken}`;
 
-    console.log(
-      "✅ Access token obtained (expires in:",
-      response.data.expires_in,
-      "s)",
-    );
-    console.log("🕐 Token will be refreshed after:", tokenExpiry.toISOString());
-
     return cachedToken;
   } catch (error) {
     console.error("❌ Token Error:", error.response?.data || error.message);
@@ -75,7 +63,6 @@ async function getAccessToken() {
 function clearTokenCache() {
   cachedToken = null;
   tokenExpiry = null;
-  console.log("🗑️ Token cache cleared");
 }
 
 /**
@@ -83,18 +70,16 @@ function clearTokenCache() {
  */
 async function testAccountBalance(accessToken) {
   try {
-    console.log("\n🧪 Testing account balance to verify credentials...");
     const response = await axios.get(
       `${MOMO_BASE_URL}/collection/v1_0/account/balance`,
       {
         headers: {
-          Authorization: accessToken, // Already has "Bearer " prefix
+          Authorization: accessToken,
           "X-Target-Environment": MOMO_ENVIRONMENT,
           "Ocp-Apim-Subscription-Key": MOMO_SUBSCRIPTION_KEY,
         },
       },
     );
-    console.log("✅ Account balance check passed:", response.data);
     return true;
   } catch (error) {
     console.error(
@@ -149,7 +134,6 @@ async function fetchTransactionDetails(referenceId, accessToken) {
     );
     return response.data;
   } catch (error) {
-    console.log("refId", referenceId);
     console.error(
       "❌ Transaction fetch error:",
       error.response?.data || error.message,
@@ -166,65 +150,38 @@ async function requestToPay(details, accessToken) {
   const referenceId = uuidv4();
 
   try {
-    // Request body matching PHP structure exactly
     const requestBody = {
-      // amount: details.amount.toString(),
-      amount: "1.00",
-      currency: "USD",
+      amount: details.amount.toString(),
+      currency: details.currency,
       externalId: details.process_id,
       payer: {
         partyIdType: "MSISDN",
         partyId: details.phone_no,
       },
-      payerMessage: "Payment for Litway Picks" || details.message,
-      payeeNote: "Payment for Litway Picks" || details.message,
+      payerMessage: details.message,
+      payeeNote: details.message,
     };
 
-    console.log("\n📤 REQUEST TO PAY:");
-    console.log("URL:", `${MOMO_BASE_URL}/collection/v1_0/requesttopay`);
-    console.log("Reference ID:", referenceId);
-    console.log("Body:", JSON.stringify(requestBody, null, 2));
-
-    await getAccountBalance("USD", accessToken);
-
-    console.log({
-      "X-Reference-Id": referenceId,
-      "X-Target-Environment": MOMO_ENVIRONMENT,
-      "Ocp-Apim-Subscription-Key": MOMO_SUBSCRIPTION_KEY,
-      "X-Callback-Url": "https://litwaypicks.com",
-      "Content-Type": "application/json",
-      Authorization: accessToken,
-    });
-
-    // Headers matching PHP order:
-    // X-Reference-Id, X-Target-Environment, Ocp-Apim-Subscription-Key, X-Callback-Url, Content-Type, Authorization
     const response = await axios.post(
       `${MOMO_BASE_URL}/collection/v1_0/requesttopay`,
-      requestBody, // axios handles JSON.stringify automatically
+      requestBody,
       {
         headers: {
           "X-Reference-Id": referenceId,
           "X-Target-Environment": MOMO_ENVIRONMENT,
           "Ocp-Apim-Subscription-Key": MOMO_SUBSCRIPTION_KEY,
-          // "X-Callback-Url": CALLBACK_URL,
+          "X-Callback-Url": CALLBACK_URL,
           "Content-Type": "application/json",
           Authorization: accessToken,
         },
-        // validateStatus: function (status) {
-        //   return status >= 200 && status < 600;
-        // },
       },
     );
 
-    console.log("Response Data:", response.data);
-
-    // PHP checks for status 202, 201, or 200
     if (
       response.status === 202 ||
       response.status === 201 ||
       response.status === 200
     ) {
-      // Fetch transaction details like PHP does
       const transaction = await fetchTransactionDetails(
         referenceId,
         accessToken,
@@ -262,7 +219,6 @@ async function getAccountBalance(currency = "LRD", accessToken) {
       },
     },
   );
-  console.log("Account Balance:", response.data);
   return response.data;
 }
 
