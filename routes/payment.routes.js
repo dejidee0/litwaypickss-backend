@@ -41,8 +41,7 @@ router.post("/pay", async (req, res) => {
     }
     const formattedPhone = phoneResult.phone;
 
-    // For Liberia, currency is LRD
-    const currency = "LRD";
+    const currency = "USD";
     const processId = externalId || `ORDER-${Date.now()}`;
 
     // Create order in database (if connected)
