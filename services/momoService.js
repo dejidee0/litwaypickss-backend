@@ -116,7 +116,6 @@ async function getUserInfo(msisdn, accessToken) {
 
 /**
  * Fetch transaction details by reference ID
- * Matches PHP: MoMoAPI::fetch_transaction_details()
  */
 async function fetchTransactionDetails(referenceId, accessToken) {
   try {
@@ -144,7 +143,6 @@ async function fetchTransactionDetails(referenceId, accessToken) {
 
 /**
  * Request to Pay
- * Matches PHP: MoMoAPI::request_to_pay()
  */
 async function requestToPay(details, accessToken) {
   const referenceId = uuidv4();
