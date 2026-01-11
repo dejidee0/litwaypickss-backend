@@ -149,15 +149,15 @@ async function requestToPay(details, accessToken) {
 
   try {
     const requestBody = {
-      amount: details.amount.toString(),
+      amount: parseFloat(details.amount).toFixed(2),
       currency: details.currency,
       externalId: details.process_id,
       payer: {
         partyIdType: "MSISDN",
         partyId: details.phone_no,
       },
-      payerMessage: details.message,
-      payeeNote: details.message,
+      payerMessage: "Payment for Litway Picks Order" || details.message,
+      payeeNote: "Payment for Litway Picks Order" || details.message,
     };
 
     const response = await axios.post(
@@ -168,7 +168,6 @@ async function requestToPay(details, accessToken) {
           "X-Reference-Id": referenceId,
           "X-Target-Environment": MOMO_ENVIRONMENT,
           "Ocp-Apim-Subscription-Key": MOMO_SUBSCRIPTION_KEY,
-          "X-Callback-Url": CALLBACK_URL,
           "Content-Type": "application/json",
           Authorization: accessToken,
         },
