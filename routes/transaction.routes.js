@@ -57,7 +57,7 @@ router.get("/status/:referenceId", async (req, res) => {
     const transaction = await fetchTransactionDetails(referenceId, accessToken);
 
     if (!transaction) {
-      // Check cache
+      // Check cache as fallback
       if (cached) {
         return res.json({
           success: true,
@@ -66,6 +66,8 @@ router.get("/status/:referenceId", async (req, res) => {
           source: "cache",
         });
       }
+
+      // Transaction not found in API or cache
       return res.status(404).json({
         success: false,
         message: "Transaction not found",
@@ -121,7 +123,7 @@ router.get("/status/:referenceId", async (req, res) => {
   } catch (error) {
     console.error(
       "❌ Status Check Error:",
-      error.response?.data || error.message
+      error.response?.data || error.message,
     );
 
     res.status(500).json({
